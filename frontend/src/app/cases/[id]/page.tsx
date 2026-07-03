@@ -285,7 +285,7 @@ function FactsTab({ caseData }: { caseData: CaseDetails }) {
 function ArgumentsTab({ caseData }: { caseData: CaseDetails }) {
   const [side, setSide] = useState<'plaintiff' | 'defendant'>('plaintiff');
 
-  const arguments =
+  const legalArgs =
     side === 'plaintiff'
       ? caseData.plaintiff_arguments
       : caseData.defendant_arguments;
@@ -315,20 +315,20 @@ function ArgumentsTab({ caseData }: { caseData: CaseDetails }) {
         </button>
       </div>
 
-      {arguments ? (
+      {legalArgs ? (
         <div className="space-y-4">
-          {arguments.opening_statement && (
+          {legalArgs.opening_statement && (
             <div className="p-4 bg-gray-700/50 rounded-lg">
               <h4 className="text-white font-semibold mb-2">Opening Statement</h4>
-              <p className="text-gray-300">{arguments.opening_statement}</p>
+              <p className="text-gray-300">{legalArgs.opening_statement}</p>
             </div>
           )}
 
-          {arguments.main_arguments && arguments.main_arguments.length > 0 && (
+          {legalArgs.main_arguments && legalArgs.main_arguments.length > 0 && (
             <div>
               <h4 className="text-white font-semibold mb-3">Main Arguments</h4>
               <div className="space-y-3">
-                {arguments.main_arguments.map((arg: any, index: number) => (
+                {legalArgs.main_arguments.map((arg: any, index: number) => (
                   <div key={index} className="p-4 bg-gray-700/50 rounded-lg">
                     <div className="flex items-start gap-3">
                       <span className="text-legal-gold font-bold">{index + 1}</span>
@@ -359,10 +359,10 @@ function ArgumentsTab({ caseData }: { caseData: CaseDetails }) {
             </div>
           )}
 
-          {arguments.conclusion && (
+          {legalArgs.conclusion && (
             <div className="p-4 bg-gray-700/50 rounded-lg">
               <h4 className="text-white font-semibold mb-2">Conclusion</h4>
-              <p className="text-gray-300">{arguments.conclusion}</p>
+              <p className="text-gray-300">{legalArgs.conclusion}</p>
             </div>
           )}
         </div>
