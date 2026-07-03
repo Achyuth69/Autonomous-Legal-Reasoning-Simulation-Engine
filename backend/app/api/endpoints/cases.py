@@ -122,6 +122,22 @@ async def process_case_async(case_id: str, case_data: dict):
             "defendant_strength": results.get("defendant_strength", 0.0),
             "citation_verification": results.get("citation_verification", {}),
             "multi_model_debate": results.get("multi_model_debate", {}),
+            # new RAG + analysis fields
+            "ranked_evidence": results.get("ranked_evidence", []),
+            "constitutional_provisions": results.get("constitutional_provisions", []),
+            "statutory_provisions": results.get("statutory_provisions", []),
+            "legal_principles": results.get("legal_principles", []),
+            "reasoning_chain": results.get("reasoning_chain", []),
+            "possible_outcomes": results.get("possible_outcomes", []),
+            "confidence_assessment": results.get("confidence_assessment", {}),
+            "structured_report": results.get("structured_report", {}),
+            "plaintiff_challenges": results.get("plaintiff_challenges", []),
+            "defendant_challenges": results.get("defendant_challenges", []),
+            "unknown_facts": results.get("unknown_facts", []),
+            "contradictions": results.get("contradictions", []),
+            "possible_violations": results.get("possible_violations", []),
+            "has_legal_kb": results.get("has_legal_kb", False),
+            "evidence_summary": results.get("evidence_summary", ""),
             "agent_logs": results.get("agent_logs", []),
             "completed_at": datetime.utcnow().isoformat()
         })

@@ -58,6 +58,12 @@ export default function Home() {
               <Upload className="w-5 h-5" />
               New Case
             </button>
+            <a
+              href="/knowledge-base"
+              className="flex items-center gap-2 px-4 py-3 bg-gray-700 text-gray-200 font-semibold rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Knowledge Base
+            </a>
           </div>
         </div>
       </header>
