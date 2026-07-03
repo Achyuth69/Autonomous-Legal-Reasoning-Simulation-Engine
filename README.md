@@ -36,7 +36,7 @@ Develop an AI system that demonstrates advanced reasoning through autonomous leg
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
 - **Backend**: FastAPI, Python
-- **LLM Providers**: OpenAI (GPT-4), Groq (Llama 3, Mixtral, Gemma)
+- **LLM Providers**: Google Gemini Flash (free), Groq (Llama 3, Mixtral, Gemma)
 - **LLM Framework**: LangGraph, LangChain
 - **Database**: PostgreSQL
 - **Vector Database**: ChromaDB
@@ -77,7 +77,7 @@ npm install
 ```bash
 # Backend (.env)
 cp .env.example .env
-# Configure your OpenAI API key and Groq API key (optional for multi-model debate)
+# Configure your Gemini API key (free) and optional Groq key for multi-model debate
 
 # Frontend (.env.local)
 cp .env.example .env.local

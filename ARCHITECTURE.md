@@ -125,7 +125,8 @@ frontend/
 ### Backend
 - **FastAPI**: Modern async Python web framework
 - **LangChain/LangGraph**: LLM orchestration and agent framework
-- **OpenAI GPT-4**: Large language model for reasoning
+- **Google Gemini Flash**: Free LLM via `langchain-google-genai` (get key at aistudio.google.com)
+- **Groq**: Fast inference for multi-model debate (Llama 3, Mixtral, Gemma)
 - **PostgreSQL**: Relational database for structured data
 - **ChromaDB**: Vector database for legal document embeddings
 - **Redis**: Caching and session management

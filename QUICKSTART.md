@@ -7,8 +7,8 @@ Get the Autonomous Legal Reasoning Engine up and running in 5 minutes!
 - Python 3.11+
 - Node.js 18+
 - PostgreSQL (or use Docker)
-- OpenAI API Key
-- Groq API Key (optional, for Multi-Model Debate feature — free at console.groq.com)
+- Google Gemini API Key (free — get one at https://aistudio.google.com/app/apikey)
+- Groq API Key (optional, for Multi-Model Debate — free at console.groq.com)
 
 ## Option 1: Docker Compose (Recommended)
 
@@ -19,10 +19,9 @@ The easiest way to run the entire application:
 git clone https://github.com/Achyuth69/Autonomous-Legal-Reasoning-Simulation-Engine.git
 cd Autonomous-Legal-Reasoning-Simulation-Engine
 
-# 2. Add your OpenAI API key to backend/.env
-# Copy .env.example to .env and add your key
+# 2. Add your Gemini API key to backend/.env (FREE at aistudio.google.com)
 cp backend/.env.example backend/.env
-# Edit backend/.env and add: OPENAI_API_KEY=your-key-here
+# Edit backend/.env and add: GEMINI_API_KEY=your-key-here
 
 # 3. Start everything with Docker Compose
 docker-compose up --build
@@ -53,9 +52,10 @@ source venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file and add your OpenAI API key
+# Create .env file and add your Gemini API key
 cp .env.example .env
-# Edit .env and add: OPENAI_API_KEY=your-key-here
+# Edit .env and add: GEMINI_API_KEY=your-key-here
+# Get a FREE key at: https://aistudio.google.com/app/apikey
 
 # Create data directories
 mkdir -p data/uploads
@@ -154,7 +154,8 @@ curl http://localhost:8000/api/v1/cases/
 ### Environment Variables
 
 **Backend (.env):**
-- `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `GEMINI_API_KEY`: Your free Google Gemini API key (required — get at aistudio.google.com)
+- `GEMINI_MODEL`: Model to use (default: `gemini-1.5-flash`)
 - `GROQ_API_KEY`: Your Groq API key (optional, enables multi-model debate)
 - `DATABASE_URL`: PostgreSQL connection string
 - `OPENAI_MODEL`: Model to use (default: gpt-4-turbo-preview)
@@ -167,8 +168,8 @@ curl http://localhost:8000/api/v1/cases/
 
 ### Backend won't start
 
-**Issue**: `openai.AuthenticationError: No API key provided`
-**Solution**: Add your OpenAI API key to `backend/.env`
+**Issue**: `google.auth.exceptions.DefaultCredentialsError` or `No API key provided`
+**Solution**: Add your Gemini API key to `backend/.env`: `GEMINI_API_KEY=...`
 
 **Issue**: Database connection error
 **Solution**: Make sure PostgreSQL is running or use Docker Compose
@@ -188,8 +189,8 @@ curl http://localhost:8000/api/v1/cases/
 **Issue**: Case stuck in "processing" status
 **Solution**: 
 - Check backend logs for errors
-- Verify OpenAI API key is valid
-- Ensure sufficient API quota
+- Verify Gemini API key is valid
+- Ensure sufficient API quota (Gemini has generous free tier)
 
 ## Development
 
