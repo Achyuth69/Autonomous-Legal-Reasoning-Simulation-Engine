@@ -125,11 +125,26 @@ export default function CasePage({ params }: { params: { id: string } }) {
 }
 
 /* ─── helpers ─────────────────────────────────────────────────── */
-function IR({ label, value }: { label: string; value: string }) {
+
+/** Safely convert any value to a display string — handles nested objects */
+function toStr(val: any): string {
+  if (val === null || val === undefined || val === '') return 'N/A';
+  if (typeof val === 'string') return val || 'N/A';
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (Array.isArray(val)) return val.map(toStr).filter(s => s !== 'N/A').join(', ') || 'N/A';
+  if (typeof val === 'object') {
+    // e.g. {Country:"India", State:"California", Court:"Superior Court"}
+    const parts = Object.values(val).filter((v: any) => v && typeof v === 'string');
+    return parts.join(', ') || JSON.stringify(val);
+  }
+  return String(val);
+}
+
+function IR({ label, value }: { label: string; value: any }) {
   return (
     <div className="info-row">
       <span className="text-slate-500 text-sm">{label}</span>
-      <span className="text-slate-200 text-sm font-medium">{value}</span>
+      <span className="text-slate-200 text-sm font-medium text-right max-w-xs">{toStr(value)}</span>
     </div>
   );
 }
@@ -167,7 +182,7 @@ function OverviewTab({ c }: { c: CaseDetails }) {
         <div className="card p-5">
           <Section title="Parties">
             {c.parties && Object.keys(c.parties).length > 0
-              ? Object.entries(c.parties).map(([role, name]) => <IR key={role} label={role} value={String(name)}/>)
+              ? Object.entries(c.parties).map(([role, name]) => <IR key={role} label={role} value={name}/>)
               : <p className="text-slate-500 text-sm">No parties info</p>}
           </Section>
         </div>
@@ -291,7 +306,7 @@ function FactsTab({ c }: { c: CaseDetails }) {
             {c.facts.map((f, i) => (
               <li key={i} className="flex gap-3 card p-3">
                 <span className="text-brand-light font-semibold shrink-0 text-sm">{i + 1}.</span>
-                <span className="text-slate-300 text-sm">{f}</span>
+                <span className="text-slate-300 text-sm">{toStr(f)}</span>
               </li>
             ))}
           </ul>
@@ -300,14 +315,14 @@ function FactsTab({ c }: { c: CaseDetails }) {
       {c.unknown_facts?.length ? (
         <Section title="Unknown / Missing Facts">
           <div className="card p-4 border-amber-800/30 space-y-1.5">
-            {c.unknown_facts.map((f, i) => <p key={i} className="text-amber-300 text-sm">? {f}</p>)}
+            {c.unknown_facts.map((f, i) => <p key={i} className="text-amber-300 text-sm">? {toStr(f)}</p>)}
           </div>
         </Section>
       ) : null}
       {c.contradictions?.length ? (
         <Section title="Contradictions Found">
           <div className="card p-4 border-rose-800/30 space-y-1.5">
-            {c.contradictions.map((f, i) => <p key={i} className="text-rose-300 text-sm">⚡ {f}</p>)}
+            {c.contradictions.map((f, i) => <p key={i} className="text-rose-300 text-sm">⚡ {toStr(f)}</p>)}
           </div>
         </Section>
       ) : null}
@@ -317,7 +332,7 @@ function FactsTab({ c }: { c: CaseDetails }) {
             {c.legal_issues.map((issue, i) => (
               <li key={i} className="flex gap-2.5 items-start">
                 <CheckCircle className="w-4 h-4 text-brand-light shrink-0 mt-0.5"/>
-                <span className="text-slate-300 text-sm">{issue}</span>
+                <span className="text-slate-300 text-sm">{toStr(issue)}</span>
               </li>
             ))}
           </ul>
@@ -329,7 +344,7 @@ function FactsTab({ c }: { c: CaseDetails }) {
             {c.possible_violations.map((v, i) => (
               <div key={i} className="flex gap-2 items-start">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5"/>
-                <span className="text-slate-400 text-sm">{v}</span>
+                <span className="text-slate-400 text-sm">{toStr(v)}</span>
               </div>
             ))}
           </div>
@@ -516,7 +531,7 @@ function JudgmentTab({ c }: { c: CaseDetails }) {
       {j.dissenting_views?.length > 0 && (
         <Section title="Dissenting Views">
           <ul className="space-y-1">
-            {j.dissenting_views.map((v: string, i: number) => <li key={i} className="text-slate-400 text-sm">• {v}</li>)}
+            {j.dissenting_views.map((v: any, i: number) => <li key={i} className="text-slate-400 text-sm">• {toStr(v)}</li>)}
           </ul>
         </Section>
       )}
@@ -561,7 +576,7 @@ function AnalysisTab({ c }: { c: CaseDetails }) {
             {risks.legal_risks?.length > 0 && (
               <div className="p-3 bg-surface-overlay rounded-xl border border-surface-border mb-2">
                 <p className="text-slate-400 text-xs mb-1 font-medium">Legal Risks</p>
-                {risks.legal_risks.map((r: string, i: number) => <p key={i} className="text-slate-300 text-sm">• {r}</p>)}
+                {risks.legal_risks.map((r: any, i: number) => <p key={i} className="text-slate-300 text-sm">• {toStr(r)}</p>)}
               </div>
             )}
             {risks.strength_score !== undefined && (
