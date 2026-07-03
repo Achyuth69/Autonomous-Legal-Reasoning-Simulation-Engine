@@ -26,6 +26,15 @@ class MultiModelDebateAgent:
         else:
             self.client = Groq(api_key=settings.GROQ_API_KEY)
             self.models = [m.strip() for m in settings.GROQ_MODELS.split(",")]
+
+        # Map friendly names
+        self._name_map = {
+            "llama-3.3-70b-versatile": "Llama 3.3 70B",
+            "llama-3.1-8b-instant":    "Llama 3.1 8B",
+            "llama3-70b-8192":         "Llama 3 70B",
+            "mixtral-8x7b-32768":      "Mixtral 8x7B",
+            "gemma2-9b-it":            "Gemma 2 9B",
+        }
         
         self.debate_rounds = settings.GROQ_DEBATE_ROUNDS
     
@@ -305,11 +314,4 @@ Generate the final consensus opinion (500-800 words):"""
     
     def _get_model_name(self, model_id: str) -> str:
         """Get friendly name for model"""
-        model_names = {
-            "llama3-70b-8192": "Llama 3 70B",
-            "llama-3.1-70b-versatile": "Llama 3.1 70B",
-            "mixtral-8x7b-32768": "Mixtral 8x7B",
-            "gemma2-9b-it": "Gemma 2 9B",
-            "gemma-7b-it": "Gemma 7B",
-        }
-        return model_names.get(model_id, model_id)
+        return self._name_map.get(model_id, model_id)
