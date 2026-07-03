@@ -37,6 +37,13 @@ async def startup_event():
         version=settings.APP_VERSION,
         environment=settings.ENVIRONMENT
     )
+    # Auto-index pre-uploaded legal documents (Constitution, Law of India, etc.)
+    try:
+        from app.services.kb_auto_index import auto_index_knowledge_base
+        import asyncio
+        asyncio.ensure_future(auto_index_knowledge_base())
+    except Exception as e:
+        logger.warning(f"Auto-index skipped: {e}")
 
 
 @app.on_event("shutdown")
