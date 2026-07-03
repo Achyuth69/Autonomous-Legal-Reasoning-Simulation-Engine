@@ -8,6 +8,7 @@ from app.agents.defendant_advocate_agent import DefendantAdvocateAgent
 from app.agents.judge_agent import JudgeAgent
 from app.agents.risk_analysis_agent import RiskAnalysisAgent
 from app.agents.citation_verification_agent import CitationVerificationAgent
+from app.agents.multi_model_debate_agent import MultiModelDebateAgent
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -25,6 +26,7 @@ class LegalReasoningOrchestrator:
         self.judge = JudgeAgent()
         self.risk_analysis = RiskAnalysisAgent()
         self.citation_verification = CitationVerificationAgent()
+        self.multi_model_debate = MultiModelDebateAgent()
     
     async def process_case(self, case_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -160,6 +162,33 @@ class LegalReasoningOrchestrator:
             results["plaintiff_strength"] = risk_result["result"].get("plaintiff_strength", 0.0)
             results["defendant_strength"] = risk_result["result"].get("defendant_strength", 0.0)
             results["citation_verification"] = citation_result["result"].get("verification_results", {})
+            
+            # Step 9: Multi-Model Debate (Optional - if Groq is configured)
+            logger.info("Step 9: Multi-Model Debate")
+            debate_result = await self.multi_model_debate.execute({
+                "facts": results["facts"],
+                "legal_issues": results["legal_issues"],
+                "statutes": results["statutes"],
+                "precedents": results["precedents"],
+                "plaintiff_arguments": results["plaintiff_arguments"],
+                "defendant_arguments": results["defendant_arguments"],
+                "judgment": results["judgment"],
+                "parties": results["parties"]
+            })
+            results["agent_logs"].append(debate_result)
+            
+            if debate_result["status"] == "success":
+                results["multi_model_debate"] = {
+                    "debate_transcript": debate_result.get("debate_transcript", []),
+                    "final_consensus": debate_result.get("final_consensus", ""),
+                    "participating_models": debate_result["result"].get("participating_models", []),
+                    "total_rounds": debate_result["result"].get("total_rounds", 0)
+                }
+            else:
+                results["multi_model_debate"] = {
+                    "status": debate_result.get("status", "skipped"),
+                    "error": debate_result.get("error", "Debate not available")
+                }
             
             logger.info("Legal reasoning workflow completed successfully")
             results["status"] = "completed"

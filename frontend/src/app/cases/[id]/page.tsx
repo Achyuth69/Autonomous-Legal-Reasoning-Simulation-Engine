@@ -88,6 +88,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
     { id: 'arguments', label: 'Arguments', icon: Users },
     { id: 'judgment', label: 'Judgment', icon: Gavel },
     { id: 'analysis', label: 'Risk Analysis', icon: TrendingUp },
+    { id: 'debate', label: 'AI Debate', icon: Users },
     { id: 'agents', label: 'Agent Logs', icon: Shield },
   ];
 
@@ -164,6 +165,7 @@ export default function CasePage({ params }: { params: { id: string } }) {
           {activeTab === 'arguments' && <ArgumentsTab caseData={caseData} />}
           {activeTab === 'judgment' && <JudgmentTab caseData={caseData} />}
           {activeTab === 'analysis' && <AnalysisTab caseData={caseData} />}
+          {activeTab === 'debate' && <DebateTab caseData={caseData} />}
           {activeTab === 'agents' && <AgentsTab caseData={caseData} />}
         </div>
       </main>
@@ -509,6 +511,139 @@ function AnalysisTab({ caseData }: { caseData: CaseDetails }) {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function DebateTab({ caseData }: { caseData: CaseDetails }) {
+  const debate = caseData.multi_model_debate;
+
+  if (!debate) {
+    return <p className="text-gray-400">Multi-model debate not available yet</p>;
+  }
+
+  if (debate.status === 'skipped' || debate.error) {
+    return (
+      <div className="p-4 bg-yellow-900/20 border border-yellow-800 rounded-lg">
+        <h4 className="text-yellow-400 font-semibold mb-2">Debate Feature Unavailable</h4>
+        <p className="text-gray-300">
+          {debate.error || 'The multi-model debate feature requires Groq API configuration.'}
+        </p>
+        <p className="text-gray-400 text-sm mt-2">
+          To enable this feature, add your Groq API key to the backend configuration.
+        </p>
+      </div>
+    );
+  }
+
+  const transcript = debate.debate_transcript || [];
+  const consensus = debate.final_consensus || '';
+  const models = debate.participating_models || [];
+  const rounds = debate.total_rounds || 0;
+
+  // Group by round
+  const roundGroups: Record<number, typeof transcript> = {};
+  transcript.forEach((entry) => {
+    if (!roundGroups[entry.round]) {
+      roundGroups[entry.round] = [];
+    }
+    roundGroups[entry.round].push(entry);
+  });
+
+  // Model colors for visual distinction
+  const modelColors: Record<string, string> = {
+    'Llama 3 70B': 'border-blue-500 bg-blue-900/20',
+    'Mixtral 8x7B': 'border-purple-500 bg-purple-900/20',
+    'Gemma 2 9B': 'border-green-500 bg-green-900/20',
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Debate Header */}
+      <div className="p-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-700 rounded-lg">
+        <div className="flex items-center gap-3 mb-3">
+          <Users className="w-8 h-8 text-purple-400" />
+          <h3 className="text-2xl font-bold text-white">Multi-Model AI Debate</h3>
+        </div>
+        <p className="text-gray-300 mb-4">
+          {models.length} AI models debated this case over {rounds} rounds to reach a consensus.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {models.map((model, idx) => (
+            <span
+              key={idx}
+              className="px-3 py-1 bg-purple-800/50 text-purple-200 rounded-full text-sm font-medium"
+            >
+              {model}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Debate Rounds */}
+      {Object.keys(roundGroups)
+        .sort((a, b) => Number(a) - Number(b))
+        .map((roundNum) => (
+          <div key={roundNum} className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="h-px flex-1 bg-gray-700"></div>
+              <h4 className="text-lg font-semibold text-white px-4">Round {roundNum}</h4>
+              <div className="h-px flex-1 bg-gray-700"></div>
+            </div>
+
+            <div className="space-y-4">
+              {roundGroups[Number(roundNum)].map((entry, idx) => {
+                const colorClass = modelColors[entry.model] || 'border-gray-500 bg-gray-900/20';
+                
+                return (
+                  <div
+                    key={idx}
+                    className={`p-5 border-l-4 rounded-lg ${colorClass}`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h5 className="text-white font-semibold text-lg flex items-center gap-2">
+                        <Users className="w-5 h-5" />
+                        {entry.model}
+                      </h5>
+                      <span className="text-xs text-gray-400">Round {entry.round}</span>
+                    </div>
+                    <div className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                      {entry.argument}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+      {/* Final Consensus */}
+      {consensus && (
+        <div className="mt-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-px flex-1 bg-legal-gold"></div>
+            <h4 className="text-xl font-bold text-white px-4 flex items-center gap-2">
+              <Gavel className="w-6 h-6 text-legal-gold" />
+              Final Consensus Opinion
+            </h4>
+            <div className="h-px flex-1 bg-legal-gold"></div>
+          </div>
+
+          <div className="p-6 bg-gradient-to-br from-legal-gold/10 to-yellow-900/10 border-2 border-legal-gold rounded-lg">
+            <div className="text-gray-200 whitespace-pre-wrap leading-relaxed">
+              {consensus}
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 bg-blue-900/20 border border-blue-800 rounded-lg">
+            <p className="text-blue-300 text-sm">
+              <strong>Note:</strong> This consensus was synthesized from {rounds} rounds of debate 
+              between {models.length} different AI models, each bringing unique perspectives and 
+              reasoning approaches to the legal analysis.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

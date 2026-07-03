@@ -121,6 +121,7 @@ async def process_case_async(case_id: str, case_data: dict):
             "plaintiff_strength": results.get("plaintiff_strength", 0.0),
             "defendant_strength": results.get("defendant_strength", 0.0),
             "citation_verification": results.get("citation_verification", {}),
+            "multi_model_debate": results.get("multi_model_debate", {}),
             "agent_logs": results.get("agent_logs", []),
             "completed_at": datetime.utcnow().isoformat()
         })

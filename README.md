@@ -18,10 +18,12 @@ Develop an AI system that demonstrates advanced reasoning through autonomous leg
 8. **Compliance Agent** - Checks regulatory compliance
 9. **Risk Analysis Agent** - Predicts litigation risks
 10. **Citation Verification Agent** - Validates legal citations
+11. **🆕 Multi-Model Debate Agent** - Orchestrates debates between multiple Groq AI models (Llama 3, Mixtral, Gemma) to reach consensus
 
 ## Features
 
 - Multi-agent collaboration with autonomous reasoning
+- **🆕 Multi-Model AI Debate**: Multiple AI models (Llama 3, Mixtral, Gemma) debate the case and reach consensus
 - Legal argument generation and statutory interpretation
 - Precedent comparison and citation verification
 - Explainable AI with confidence estimation
@@ -34,9 +36,10 @@ Develop an AI system that demonstrates advanced reasoning through autonomous leg
 
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS
 - **Backend**: FastAPI, Python
+- **LLM Providers**: OpenAI (GPT-4), Groq (Llama 3, Mixtral, Gemma)
+- **LLM Framework**: LangGraph, LangChain
 - **Database**: PostgreSQL
 - **Vector Database**: ChromaDB
-- **LLM Framework**: LangGraph, LangChain
 - **Document Processing**: PyPDF2, python-docx, pytesseract
 
 ## Getting Started
@@ -74,7 +77,7 @@ npm install
 ```bash
 # Backend (.env)
 cp .env.example .env
-# Configure your OpenAI API key, database credentials, etc.
+# Configure your OpenAI API key and Groq API key (optional for multi-model debate)
 
 # Frontend (.env.local)
 cp .env.example .env.local

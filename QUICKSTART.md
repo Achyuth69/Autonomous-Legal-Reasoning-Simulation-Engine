@@ -8,6 +8,7 @@ Get the Autonomous Legal Reasoning Engine up and running in 5 minutes!
 - Node.js 18+
 - PostgreSQL (or use Docker)
 - OpenAI API Key
+- Groq API Key (optional, for Multi-Model Debate feature — free at console.groq.com)
 
 ## Option 1: Docker Compose (Recommended)
 
@@ -86,6 +87,25 @@ npm run dev
 
 Frontend will be available at http://localhost:3000
 
+## Exploring Multi-Model AI Debate
+
+The debate feature uses Groq's free API to pit multiple AI models against each other:
+
+1. Get a free Groq API key at https://console.groq.com
+2. Add it to `backend/.env`:
+   ```bash
+   GROQ_API_KEY=your-groq-api-key-here
+   GROQ_DEBATE_ROUNDS=3
+   GROQ_MODELS=llama3-70b-8192,mixtral-8x7b-32768,gemma2-9b-it
+   ```
+3. After case analysis completes, click the **AI Debate** tab
+4. You'll see each model's argument per round and the final consensus
+
+The models currently supported in debate:
+- **Llama 3 70B** – Meta's flagship model
+- **Mixtral 8x7B** – Mistral's mixture-of-experts model
+- **Gemma 2 9B** – Google's efficient model
+
 ## Testing the Application
 
 1. Open http://localhost:3000 in your browser
@@ -104,6 +124,7 @@ Frontend will be available at http://localhost:3000
    - **Arguments**: Plaintiff and defendant positions
    - **Judgment**: Simulated judicial decision
    - **Risk Analysis**: Litigation risk assessment
+   - **AI Debate**: Multi-model debate and consensus (if Groq configured)
    - **Agent Logs**: AI reasoning traces
 
 ## API Examples
@@ -134,6 +155,7 @@ curl http://localhost:8000/api/v1/cases/
 
 **Backend (.env):**
 - `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `GROQ_API_KEY`: Your Groq API key (optional, enables multi-model debate)
 - `DATABASE_URL`: PostgreSQL connection string
 - `OPENAI_MODEL`: Model to use (default: gpt-4-turbo-preview)
 - `DEBUG`: Enable debug mode (default: True)

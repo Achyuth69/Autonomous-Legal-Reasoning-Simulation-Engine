@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     OPENAI_TEMPERATURE: float = 0.7
     OPENAI_MAX_TOKENS: int = 4000
     
+    # Groq
+    GROQ_API_KEY: str = ""
+    GROQ_DEBATE_ROUNDS: int = 3
+
+    # Groq models used in debate (comma-separated)
+    GROQ_MODELS: str = "llama3-70b-8192,mixtral-8x7b-32768,gemma2-9b-it"
+
     # ChromaDB
     CHROMA_PERSIST_DIRECTORY: str = "./data/chroma"
     CHROMA_COLLECTION_NAME: str = "legal_documents"
