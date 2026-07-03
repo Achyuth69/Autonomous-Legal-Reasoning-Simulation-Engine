@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Scale, FileText, Users, BookOpen, Gavel,
   Shield, TrendingUp, CheckCircle, AlertCircle, Clock,
-  Database, Brain, Search, BarChart2, MessageSquare
+  Database, Brain, MessageSquare, Loader2
 } from 'lucide-react';
 import { casesApi, CaseDetails } from '@/lib/api';
-import { formatDate, getStatusColor } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 
 export default function CasePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -34,20 +34,20 @@ export default function CasePage({ params }: { params: { id: string } }) {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-gradient-to-br from-legal-darker via-legal-dark to-gray-900 flex items-center justify-center">
+    <div className="min-h-screen bg-surface-base flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-legal-gold mx-auto"/>
-        <p className="text-gray-400 mt-4">Loading case...</p>
+        <Loader2 className="w-12 h-12 text-brand animate-spin mx-auto mb-3"/>
+        <p className="text-slate-400">Loading case…</p>
       </div>
     </div>
   );
 
   if (!caseData) return (
-    <div className="min-h-screen bg-gradient-to-br from-legal-darker via-legal-dark to-gray-900 flex items-center justify-center">
+    <div className="min-h-screen bg-surface-base flex items-center justify-center">
       <div className="text-center">
-        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4"/>
-        <h2 className="text-2xl font-bold text-white mb-2">Case Not Found</h2>
-        <button onClick={() => router.push('/')} className="mt-4 px-6 py-2 bg-legal-gold text-legal-darker font-semibold rounded-lg">Go Home</button>
+        <AlertCircle className="w-16 h-16 text-rose-500 mx-auto mb-4"/>
+        <h2 className="text-2xl font-bold text-slate-100 mb-4">Case Not Found</h2>
+        <button onClick={() => router.push('/')} className="btn-primary">Go Home</button>
       </div>
     </div>
   );
@@ -65,44 +65,50 @@ export default function CasePage({ params }: { params: { id: string } }) {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-legal-darker via-legal-dark to-gray-900">
-      <header className="border-b border-gray-800 bg-legal-darker/50 backdrop-blur-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => router.push('/')} className="flex items-center gap-2 text-gray-400 hover:text-white">
-            <ArrowLeft className="w-5 h-5"/> Back to Cases
+    <div className="min-h-screen bg-surface-base flex flex-col">
+      {/* ── Header ──────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-surface-border bg-surface-base/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+          <button onClick={() => router.push('/')} className="btn-ghost -ml-2 text-slate-400">
+            <ArrowLeft className="w-4 h-4"/> Back
           </button>
           <div className="flex items-center gap-3">
-            <Scale className="w-6 h-6 text-legal-gold"/>
-            <span className="text-white font-semibold">{caseData.case_number}</span>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(caseData.status)}`}>{caseData.status}</span>
-            {caseData.has_legal_kb && <span className="px-2 py-1 bg-green-900/40 text-green-400 rounded text-xs">KB Active</span>}
-            {!caseData.has_legal_kb && caseData.status === 'completed' && <span className="px-2 py-1 bg-yellow-900/40 text-yellow-400 rounded text-xs">No KB</span>}
+            <span className="text-slate-400 text-sm font-mono hidden sm:block">{caseData.case_number}</span>
+            <span className={`badge ${caseData.status === 'completed' ? 'badge-success' : caseData.status === 'processing' ? 'badge-brand' : caseData.status === 'failed' ? 'badge-danger' : 'badge-warn'}`}>
+              {caseData.status === 'processing' && <Loader2 className="w-3 h-3 animate-spin"/>}
+              {caseData.status}
+            </span>
+            {caseData.has_legal_kb && <span className="badge badge-accent">KB Active</span>}
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{caseData.title}</h1>
-          <p className="text-gray-400">Created: {formatDate(caseData.created_at)}</p>
-          {polling && <div className="mt-2 flex items-center gap-2 text-blue-400"><Clock className="w-4 h-4 animate-spin"/><span className="text-sm">AI agents processing…</span></div>}
+      <main className="max-w-7xl mx-auto w-full px-6 py-8 flex-1">
+        {/* Case title */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-100 mb-1">{caseData.title}</h1>
+          <p className="text-slate-500 text-sm">{formatDate(caseData.created_at)}</p>
+          {polling && <p className="text-brand-light text-xs mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin"/> AI agents processing…</p>}
           {!caseData.has_legal_kb && caseData.status === 'completed' && (
-            <div className="mt-3 p-3 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-              <p className="text-yellow-300 text-sm">⚠ No legal documents indexed. <a href="/knowledge-base" className="underline hover:text-yellow-200">Upload Constitution / Law Books</a> to enable document-grounded analysis.</p>
+            <div className="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-amber-900/15 border border-amber-800/40 rounded-lg">
+              <span className="text-amber-400 text-xs">⚠ No KB documents indexed.</span>
+              <a href="/knowledge-base" className="text-amber-300 text-xs underline">Upload Constitution / Laws →</a>
             </div>
           )}
         </div>
 
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {/* Tabs */}
+        <div className="flex gap-1 mb-6 overflow-x-auto pb-1 border-b border-surface-border">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === id ? 'bg-legal-gold text-legal-darker' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>
-              <Icon className="w-4 h-4"/>{label}
+              className={activeTab === id ? 'tab-active' : 'tab'}>
+              <Icon className="w-3.5 h-3.5"/>{label}
             </button>
           ))}
         </div>
 
-        <div className="bg-gray-800/50 rounded-lg border border-gray-700 p-6">
+        {/* Tab content */}
+        <div className="animate-fade-in">
           {activeTab === 'overview'   && <OverviewTab   c={caseData}/>}
           {activeTab === 'evidence'   && <EvidenceTab   c={caseData}/>}
           {activeTab === 'facts'      && <FactsTab      c={caseData}/>}
@@ -121,22 +127,22 @@ export default function CasePage({ params }: { params: { id: string } }) {
 /* ─── helpers ─────────────────────────────────────────────────── */
 function IR({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-2 border-b border-gray-700">
-      <span className="text-gray-400">{label}:</span>
-      <span className="text-white font-medium">{value}</span>
+    <div className="info-row">
+      <span className="text-slate-500 text-sm">{label}</span>
+      <span className="text-slate-200 text-sm font-medium">{value}</span>
     </div>
   );
 }
-function Badge({ text, color = 'bg-gray-700 text-gray-300' }: { text: string; color?: string }) {
-  return <span className={`px-2 py-0.5 rounded text-xs font-medium ${color}`}>{text}</span>;
+function Badge({ text, color = 'badge-neutral' }: { text: string; color?: string }) {
+  return <span className={`badge ${color}`}>{text}</span>;
 }
 function confColor(c: string) {
-  return c === 'HIGH' ? 'text-green-400' : c === 'MEDIUM' || c === 'MEDIUM-HIGH' ? 'text-yellow-400' : 'text-red-400';
+  return c === 'HIGH' ? 'text-emerald-400' : c === 'MEDIUM' || c === 'MEDIUM-HIGH' ? 'text-amber-400' : 'text-rose-400';
 }
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-lg font-semibold text-white mb-3">{title}</h3>
+      <h3 className="section-title">{title}</h3>
       {children}
     </div>
   );
@@ -147,10 +153,10 @@ function OverviewTab({ c }: { c: CaseDetails }) {
   const conf = c.confidence_assessment;
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div>
+      <div className="grid md:grid-cols-2 gap-5">
+        <div className="card p-5">
           <Section title="Case Information">
-            <div className="space-y-1">
+            <div>
               <IR label="Jurisdiction" value={c.jurisdiction || 'N/A'}/>
               <IR label="Case Type" value={c.case_type || 'N/A'}/>
               <IR label="Verdict" value={c.verdict || 'Pending'}/>
@@ -158,34 +164,34 @@ function OverviewTab({ c }: { c: CaseDetails }) {
             </div>
           </Section>
         </div>
-        <div>
+        <div className="card p-5">
           <Section title="Parties">
             {c.parties && Object.keys(c.parties).length > 0
               ? Object.entries(c.parties).map(([role, name]) => <IR key={role} label={role} value={String(name)}/>)
-              : <p className="text-gray-400">No parties information available</p>}
+              : <p className="text-slate-500 text-sm">No parties info</p>}
           </Section>
         </div>
       </div>
 
       {conf && (
-        <div className="p-4 bg-gray-700/50 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-white font-semibold">Confidence Assessment</h4>
-            <Badge text={conf.confidence_label} color={conf.confidence_label === 'HIGH' ? 'bg-green-900/40 text-green-400' : 'bg-yellow-900/40 text-yellow-400'}/>
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="section-title mb-0">Confidence Assessment</h4>
+            <Badge text={conf.confidence_label} color={conf.confidence_label === 'HIGH' ? 'badge-success' : conf.confidence_label.includes('MEDIUM') ? 'badge-warn' : 'badge-danger'}/>
           </div>
-          <div className="w-full bg-gray-600 rounded-full h-2 mb-3">
-            <div className="bg-legal-gold h-2 rounded-full" style={{ width: `${conf.overall_confidence * 100}%` }}/>
+          <div className="w-full bg-surface-border rounded-full h-1.5 mb-4">
+            <div className="bg-brand h-1.5 rounded-full transition-all" style={{ width: `${conf.overall_confidence * 100}%` }}/>
           </div>
           {conf.limitations?.length > 0 && (
             <ul className="space-y-1">
-              {conf.limitations.map((l: string, i: number) => <li key={i} className="text-yellow-300 text-sm">⚠ {l}</li>)}
+              {conf.limitations.map((l: string, i: number) => <li key={i} className="text-amber-400 text-xs flex gap-1.5">⚠ {l}</li>)}
             </ul>
           )}
         </div>
       )}
 
-      {c.status === 'processing' && <div className="p-4 bg-blue-900/20 border border-blue-800 rounded-lg"><p className="text-blue-400">Agents are analysing this case…</p></div>}
-      {c.error && <div className="p-4 bg-red-900/20 border border-red-800 rounded-lg"><p className="text-red-400">Error: {c.error}</p></div>}
+      {c.status === 'processing' && <div className="p-4 bg-brand/10 border border-brand/20 rounded-lg"><p className="text-brand-light text-sm">AI agents are analysing this case…</p></div>}
+      {c.error && <div className="p-4 bg-rose-900/15 border border-rose-800/40 rounded-lg"><p className="text-rose-400 text-sm">Error: {c.error}</p></div>}
     </div>
   );
 }
@@ -198,14 +204,14 @@ function EvidenceTab({ c }: { c: CaseDetails }) {
   return (
     <div className="space-y-6">
       {!c.has_legal_kb && (
-        <div className="p-4 bg-yellow-900/20 border border-yellow-700 rounded-lg">
-          <p className="text-yellow-300 text-sm">No legal documents indexed. <a href="/knowledge-base" className="underline">Upload documents</a> to enable RAG-based evidence retrieval.</p>
+        <div className="p-4 bg-amber-900/10 border border-amber-800/30 rounded-lg">
+          <p className="text-amber-300 text-sm">No legal documents indexed. <a href="/knowledge-base" className="underline text-amber-200">Upload documents</a> to enable RAG-based evidence retrieval.</p>
         </div>
       )}
       {c.evidence_summary && (
-        <div className="p-4 bg-gray-700/50 rounded-lg">
-          <h4 className="text-white font-semibold mb-1">Evidence Summary</h4>
-          <p className="text-gray-300 text-sm">{c.evidence_summary}</p>
+        <div className="card p-4">
+          <h4 className="section-title">Evidence Summary</h4>
+          <p className="text-slate-400 text-sm">{c.evidence_summary}</p>
         </div>
       )}
       {constitutional.length > 0 && (
@@ -214,12 +220,12 @@ function EvidenceTab({ c }: { c: CaseDetails }) {
             {constitutional.map((p: any, i: number) => (
               <div key={i} className="p-3 border-l-4 border-yellow-500 bg-yellow-900/10 rounded-r-lg">
                 <div className="flex gap-2 flex-wrap mb-1">
-                  {p.article && <Badge text={`Article ${p.article}`} color="bg-yellow-900/40 text-yellow-300"/>}
-                  {p.section && <Badge text={`Section ${p.section}`} color="bg-blue-900/40 text-blue-300"/>}
-                  {p.confidence && <Badge text={p.confidence} color={p.confidence === 'HIGH' ? 'bg-green-900/40 text-green-400' : 'bg-gray-700 text-gray-300'}/>}
+                  {p.article && <Badge text={`Article ${p.article}`} color="bg-yellow-900/40 text-amber-300"/>}
+                  {p.section && <Badge text={`Section ${p.section}`} color="bg-blue-900/40 text-accent"/>}
+                  {p.confidence && <Badge text={p.confidence} color={p.confidence === 'HIGH' ? 'bg-green-900/40 text-emerald-400' : 'bg-surface-overlay text-slate-300'}/>}
                 </div>
-                <p className="text-gray-300 text-sm">{p.excerpt || p.text || p.applicability}</p>
-                {p.document && <p className="text-gray-500 text-xs mt-1">Source: {p.document}</p>}
+                <p className="text-slate-300 text-sm">{p.excerpt || p.text || p.applicability}</p>
+                {p.document && <p className="text-slate-500 text-xs mt-1">Source: {p.document}</p>}
               </div>
             ))}
           </div>
@@ -231,12 +237,12 @@ function EvidenceTab({ c }: { c: CaseDetails }) {
             {statutory.map((p: any, i: number) => (
               <div key={i} className="p-3 border-l-4 border-blue-500 bg-blue-900/10 rounded-r-lg">
                 <div className="flex gap-2 flex-wrap mb-1">
-                  {p.section && <Badge text={`Section ${p.section}`} color="bg-blue-900/40 text-blue-300"/>}
+                  {p.section && <Badge text={`Section ${p.section}`} color="bg-blue-900/40 text-accent"/>}
                   {p.chapter && <Badge text={`Chapter ${p.chapter}`} color="bg-purple-900/40 text-purple-300"/>}
-                  {p.confidence && <Badge text={p.confidence} color="bg-gray-700 text-gray-300"/>}
+                  {p.confidence && <Badge text={p.confidence} color="bg-surface-overlay text-slate-300"/>}
                 </div>
-                <p className="text-gray-300 text-sm">{p.excerpt || p.applicability}</p>
-                {p.document && <p className="text-gray-500 text-xs mt-1">Source: {p.document}</p>}
+                <p className="text-slate-300 text-sm">{p.excerpt || p.applicability}</p>
+                {p.document && <p className="text-slate-500 text-xs mt-1">Source: {p.document}</p>}
               </div>
             ))}
           </div>
@@ -246,22 +252,22 @@ function EvidenceTab({ c }: { c: CaseDetails }) {
         <Section title={`Ranked Evidence (${evidence.length} pieces)`}>
           <div className="space-y-3">
             {evidence.map((e: any, i: number) => (
-              <div key={i} className="p-4 bg-gray-700/50 rounded-lg">
+              <div key={i} className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex gap-2 flex-wrap">
-                    <Badge text={`#${e.rank}`} color="bg-legal-gold/20 text-legal-gold"/>
-                    <Badge text={e.document} color="bg-gray-600 text-gray-200"/>
-                    {e.article && <Badge text={`Art. ${e.article}`} color="bg-yellow-900/40 text-yellow-300"/>}
-                    {e.section && <Badge text={`§ ${e.section}`} color="bg-blue-900/40 text-blue-300"/>}
-                    <Badge text={e.evidence_type || e.doc_type} color="bg-gray-700 text-gray-400"/>
+                    <Badge text={`#${e.rank}`} color="bg-brand/20 text-brand-light"/>
+                    <Badge text={e.document} color="bg-surface-border text-gray-200"/>
+                    {e.article && <Badge text={`Art. ${e.article}`} color="bg-yellow-900/40 text-amber-300"/>}
+                    {e.section && <Badge text={`§ ${e.section}`} color="bg-blue-900/40 text-accent"/>}
+                    <Badge text={e.evidence_type || e.doc_type} color="bg-surface-overlay text-slate-400"/>
                   </div>
-                  <Badge text={e.confidence} color={e.confidence === 'HIGH' ? 'bg-green-900/40 text-green-400' : e.confidence === 'MEDIUM' ? 'bg-yellow-900/40 text-yellow-400' : 'bg-red-900/40 text-red-400'}/>
+                  <Badge text={e.confidence} color={e.confidence === 'HIGH' ? 'bg-green-900/40 text-emerald-400' : e.confidence === 'MEDIUM' ? 'bg-yellow-900/40 text-amber-400' : 'bg-red-900/40 text-rose-400'}/>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed">{e.text?.slice(0, 350)}{e.text?.length > 350 ? '…' : ''}</p>
-                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                <p className="text-slate-300 text-sm leading-relaxed">{e.text?.slice(0, 350)}{e.text?.length > 350 ? '…' : ''}</p>
+                <div className="flex gap-4 mt-2 text-xs text-slate-500">
                   <span>Similarity: {(e.similarity_score * 100).toFixed(0)}%</span>
                   {e.rerank_score !== null && <span>Rerank: {(e.rerank_score * 100).toFixed(0)}%</span>}
-                  {e.supports && <span className={e.supports === 'plaintiff' ? 'text-blue-400' : e.supports === 'defendant' ? 'text-red-400' : 'text-gray-400'}>Supports: {e.supports}</span>}
+                  {e.supports && <span className={e.supports === 'plaintiff' ? 'text-brand-light' : e.supports === 'defendant' ? 'text-rose-400' : 'text-slate-400'}>Supports: {e.supports}</span>}
                 </div>
               </div>
             ))}
@@ -269,7 +275,7 @@ function EvidenceTab({ c }: { c: CaseDetails }) {
         </Section>
       )}
       {evidence.length === 0 && constitutional.length === 0 && statutory.length === 0 && (
-        <p className="text-gray-400">No evidence retrieved. Upload legal documents to the Knowledge Base first.</p>
+        <p className="text-slate-400">No evidence retrieved. Upload legal documents to the Knowledge Base first.</p>
       )}
     </div>
   );
@@ -283,52 +289,61 @@ function FactsTab({ c }: { c: CaseDetails }) {
         {c.facts?.length ? (
           <ul className="space-y-2">
             {c.facts.map((f, i) => (
-              <li key={i} className="flex gap-3"><span className="text-legal-gold font-semibold shrink-0">{i + 1}.</span><span className="text-gray-300">{f}</span></li>
+              <li key={i} className="flex gap-3 card p-3">
+                <span className="text-brand-light font-semibold shrink-0 text-sm">{i + 1}.</span>
+                <span className="text-slate-300 text-sm">{f}</span>
+              </li>
             ))}
           </ul>
-        ) : <p className="text-gray-400">No facts extracted</p>}
+        ) : <p className="text-slate-500 text-sm">No facts extracted</p>}
       </Section>
       {c.unknown_facts?.length ? (
         <Section title="Unknown / Missing Facts">
-          <ul className="space-y-1">
-            {c.unknown_facts.map((f, i) => <li key={i} className="text-orange-300 text-sm">? {f}</li>)}
-          </ul>
+          <div className="card p-4 border-amber-800/30 space-y-1.5">
+            {c.unknown_facts.map((f, i) => <p key={i} className="text-amber-300 text-sm">? {f}</p>)}
+          </div>
         </Section>
       ) : null}
       {c.contradictions?.length ? (
         <Section title="Contradictions Found">
-          <ul className="space-y-1">
-            {c.contradictions.map((f, i) => <li key={i} className="text-red-300 text-sm">⚡ {f}</li>)}
-          </ul>
+          <div className="card p-4 border-rose-800/30 space-y-1.5">
+            {c.contradictions.map((f, i) => <p key={i} className="text-rose-300 text-sm">⚡ {f}</p>)}
+          </div>
         </Section>
       ) : null}
       <Section title="Legal Issues">
         {c.legal_issues?.length ? (
           <ul className="space-y-2">
             {c.legal_issues.map((issue, i) => (
-              <li key={i} className="flex gap-3"><CheckCircle className="w-5 h-5 text-legal-gold shrink-0 mt-0.5"/><span className="text-gray-300">{issue}</span></li>
+              <li key={i} className="flex gap-2.5 items-start">
+                <CheckCircle className="w-4 h-4 text-brand-light shrink-0 mt-0.5"/>
+                <span className="text-slate-300 text-sm">{issue}</span>
+              </li>
             ))}
           </ul>
-        ) : <p className="text-gray-400">No issues identified</p>}
+        ) : <p className="text-slate-500 text-sm">No issues identified</p>}
       </Section>
       {c.possible_violations?.length ? (
         <Section title="Possible Violations">
-          <ul className="space-y-1">
-            {c.possible_violations.map((v, i) => <li key={i} className="flex gap-2"><AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5"/><span className="text-gray-300 text-sm">{v}</span></li>)}
-          </ul>
+          <div className="space-y-1.5">
+            {c.possible_violations.map((v, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5"/>
+                <span className="text-slate-400 text-sm">{v}</span>
+              </div>
+            ))}
+          </div>
         </Section>
       ) : null}
       {c.legal_principles?.length ? (
         <Section title={`Legal Principles (${c.legal_principles.length})`}>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {c.legal_principles.map((p: any, i: number) => (
-              <div key={i} className="p-3 bg-gray-700/50 rounded-lg">
-                <p className="text-white font-medium text-sm">{p.principle}</p>
-                {p.derived_from && (
-                  <p className="text-gray-500 text-xs mt-1">Source: {p.derived_from.document} {p.derived_from.article} {p.derived_from.section}</p>
-                )}
-                {p.application && <p className="text-gray-400 text-sm mt-1">{p.application}</p>}
-                {p.confidence && <Badge text={p.confidence} color={p.confidence === 'HIGH' ? 'bg-green-900/40 text-green-400' : 'bg-gray-700 text-gray-300'}/>}
+              <div key={i} className="card p-4">
+                <p className="text-slate-200 font-medium text-sm mb-1">{p.principle}</p>
+                {p.derived_from && <p className="text-slate-500 text-xs">Source: {p.derived_from.document} {p.derived_from.article} {p.derived_from.section}</p>}
+                {p.application && <p className="text-slate-400 text-sm mt-1">{p.application}</p>}
+                {p.confidence && <Badge text={p.confidence} color={p.confidence === 'HIGH' ? 'badge-success' : 'badge-neutral'}/>}
               </div>
             ))}
           </div>
@@ -344,47 +359,44 @@ function ReasoningTab({ c }: { c: CaseDetails }) {
   const outcomes = c.possible_outcomes || [];
   return (
     <div className="space-y-6">
-      <div className="p-3 bg-gray-700/30 rounded-lg text-sm text-gray-400">
-        This panel shows the step-by-step reasoning chain constructed by the AI from retrieved documentary evidence.
-        Every step references a specific document, article, or section.
+      <div className="p-3 bg-surface-overlay border border-surface-border rounded-lg text-xs text-slate-500">
+        Step-by-step reasoning chain — every step references a specific uploaded document.
       </div>
       {chain.length > 0 ? (
         <Section title={`Reasoning Chain (${chain.length} steps)`}>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {chain.map((step: any, i: number) => (
-              <div key={i} className="p-4 bg-gray-700/50 rounded-lg border-l-4 border-legal-gold/50">
+              <div key={i} className="card p-4 border-l-4 border-brand/40">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-legal-gold text-legal-darker text-xs font-bold px-2 py-0.5 rounded">Step {step.step}</span>
-                  <span className="text-white font-medium text-sm">{step.issue}</span>
+                  <span className="badge badge-brand">Step {step.step}</span>
+                  <span className="text-slate-200 font-medium text-sm">{step.issue}</span>
                 </div>
-                {step.applicable_law && <p className="text-gray-400 text-sm mb-1">Law: {step.applicable_law}</p>}
+                {step.applicable_law && <p className="text-slate-500 text-xs mb-1">Law: {step.applicable_law}</p>}
                 {step.evidence_reference && (
-                  <p className="text-blue-300 text-xs mb-2">
-                    📄 {step.evidence_reference.document} {step.evidence_reference.article && `| Art. ${step.evidence_reference.article}`} {step.evidence_reference.section && `| § ${step.evidence_reference.section}`}
+                  <p className="text-accent text-xs mb-2">
+                    📄 {step.evidence_reference.document}{step.evidence_reference.article && ` · Art. ${step.evidence_reference.article}`}{step.evidence_reference.section && ` · § ${step.evidence_reference.section}`}
                   </p>
                 )}
-                <p className="text-gray-300 text-sm">{step.reasoning}</p>
-                {step.interim_conclusion && (
-                  <p className="text-legal-gold text-sm font-medium mt-2">→ {step.interim_conclusion}</p>
-                )}
+                <p className="text-slate-400 text-sm">{step.reasoning}</p>
+                {step.interim_conclusion && <p className="text-brand-light text-sm font-medium mt-2">→ {step.interim_conclusion}</p>}
               </div>
             ))}
           </div>
         </Section>
-      ) : <p className="text-gray-400">Reasoning chain not available</p>}
+      ) : <p className="text-slate-500 text-sm">Reasoning chain not available</p>}
       {outcomes.length > 0 && (
         <Section title="Possible Outcomes">
           <div className="grid md:grid-cols-2 gap-3">
             {outcomes.map((o: any, i: number) => (
-              <div key={i} className="p-4 bg-gray-700/50 rounded-lg">
-                <p className="text-white font-medium text-sm mb-2">{o.outcome}</p>
+              <div key={i} className="card p-4">
+                <p className="text-slate-200 font-medium text-sm mb-2">{o.outcome}</p>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-600 rounded-full h-2">
-                    <div className="bg-legal-gold h-2 rounded-full" style={{ width: `${(o.probability || 0) * 100}%` }}/>
+                  <div className="flex-1 bg-surface-border rounded-full h-1.5">
+                    <div className="bg-brand h-1.5 rounded-full" style={{ width: `${(o.probability || 0) * 100}%` }}/>
                   </div>
-                  <span className="text-gray-300 text-sm">{((o.probability || 0) * 100).toFixed(0)}%</span>
+                  <span className="text-slate-400 text-sm w-10 text-right">{((o.probability || 0) * 100).toFixed(0)}%</span>
                 </div>
-                {o.confidence && <Badge text={o.confidence} color="bg-gray-600 text-gray-300"/>}
+                {o.confidence && <Badge text={o.confidence} color="badge-neutral"/>}
               </div>
             ))}
           </div>
@@ -403,51 +415,51 @@ function ArgumentsTab({ c }: { c: CaseDetails }) {
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
-        <button onClick={() => setSide('plaintiff')} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${side === 'plaintiff' ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'}`}>Plaintiff Arguments</button>
-        <button onClick={() => setSide('defendant')} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${side === 'defendant' ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-400'}`}>Defendant Arguments</button>
+        <button onClick={() => setSide('plaintiff')} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${side === 'plaintiff' ? 'bg-blue-600 text-white' : 'bg-surface-overlay text-slate-400'}`}>Plaintiff Arguments</button>
+        <button onClick={() => setSide('defendant')} className={`flex-1 py-2 rounded-lg font-medium transition-colors ${side === 'defendant' ? 'bg-red-600 text-white' : 'bg-surface-overlay text-slate-400'}`}>Defendant Arguments</button>
       </div>
 
       {legalArgs ? (
         <div className="space-y-4">
           {legalArgs.opening_statement && (
-            <div className="p-4 bg-gray-700/50 rounded-lg">
-              <h4 className="text-white font-semibold mb-2">Opening Statement</h4>
-              <p className="text-gray-300">{legalArgs.opening_statement}</p>
+            <div className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
+              <h4 className="text-slate-200 font-semibold mb-2">Opening Statement</h4>
+              <p className="text-slate-300">{legalArgs.opening_statement}</p>
             </div>
           )}
           {(legalArgs.main_arguments || legalArgs.substantive_defenses || []).map((arg: any, i: number) => (
-            <div key={i} className="p-4 bg-gray-700/50 rounded-lg">
+            <div key={i} className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
               <div className="flex items-start gap-3">
-                <span className="text-legal-gold font-bold shrink-0">{i + 1}</span>
+                <span className="text-brand-light font-bold shrink-0">{i + 1}</span>
                 <div className="flex-1">
-                  <h5 className="text-white font-medium mb-1">{arg.title}</h5>
-                  <p className="text-gray-300 text-sm mb-2">{arg.claim || arg.counter_claim}</p>
-                  {arg.reasoning && <p className="text-gray-400 text-sm">{arg.reasoning}</p>}
-                  {arg.legal_basis && <p className="text-blue-300 text-xs mt-1">⚖ {arg.legal_basis}</p>}
-                  {arg.strength && <Badge text={`${arg.strength} strength`} color={arg.strength === 'high' ? 'bg-green-900/30 text-green-400' : arg.strength === 'medium' ? 'bg-yellow-900/30 text-yellow-400' : 'bg-red-900/30 text-red-400'}/>}
+                  <h5 className="text-slate-200 font-medium mb-1">{arg.title}</h5>
+                  <p className="text-slate-300 text-sm mb-2">{arg.claim || arg.counter_claim}</p>
+                  {arg.reasoning && <p className="text-slate-400 text-sm">{arg.reasoning}</p>}
+                  {arg.legal_basis && <p className="text-accent text-xs mt-1">⚖ {arg.legal_basis}</p>}
+                  {arg.strength && <Badge text={`${arg.strength} strength`} color={arg.strength === 'high' ? 'bg-emerald-900/25 text-emerald-400' : arg.strength === 'medium' ? 'bg-amber-900/25 text-amber-400' : 'bg-rose-900/25 text-rose-400'}/>}
                 </div>
               </div>
             </div>
           ))}
           {legalArgs.conclusion && (
-            <div className="p-4 bg-gray-700/50 rounded-lg">
-              <h4 className="text-white font-semibold mb-2">Conclusion</h4>
-              <p className="text-gray-300">{legalArgs.conclusion}</p>
+            <div className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
+              <h4 className="text-slate-200 font-semibold mb-2">Conclusion</h4>
+              <p className="text-slate-300">{legalArgs.conclusion}</p>
             </div>
           )}
         </div>
-      ) : <p className="text-gray-400">Arguments not available yet</p>}
+      ) : <p className="text-slate-400">Arguments not available yet</p>}
 
       {challenges.length > 0 && (
         <div>
-          <h4 className="text-white font-semibold mb-3">Cross-Examination Challenges</h4>
+          <h4 className="text-slate-200 font-semibold mb-3">Cross-Examination Challenges</h4>
           <div className="space-y-3">
             {challenges.map((ch: any, i: number) => (
-              <div key={i} className="p-3 bg-orange-900/10 border border-orange-800/40 rounded-lg">
-                <p className="text-orange-300 text-sm font-medium">{ch.argument || ch.defense}</p>
-                <p className="text-gray-300 text-sm mt-1">{ch.challenge}</p>
-                {ch.evidence_reference && <p className="text-gray-500 text-xs mt-1">📄 {ch.evidence_reference}</p>}
-                {ch.strength_of_challenge && <Badge text={ch.strength_of_challenge} color={ch.strength_of_challenge === 'HIGH' ? 'bg-red-900/40 text-red-400' : 'bg-yellow-900/40 text-yellow-400'}/>}
+              <div key={i} className="p-3 bg-amber-900/10 border border-amber-800/30 rounded-lg">
+                <p className="text-amber-300 text-sm font-medium">{ch.argument || ch.defense}</p>
+                <p className="text-slate-300 text-sm mt-1">{ch.challenge}</p>
+                {ch.evidence_reference && <p className="text-slate-500 text-xs mt-1">📄 {ch.evidence_reference}</p>}
+                {ch.strength_of_challenge && <Badge text={ch.strength_of_challenge} color={ch.strength_of_challenge === 'HIGH' ? 'bg-red-900/40 text-rose-400' : 'bg-yellow-900/40 text-amber-400'}/>}
               </div>
             ))}
           </div>
@@ -460,22 +472,22 @@ function ArgumentsTab({ c }: { c: CaseDetails }) {
 /* ─── JudgmentTab ─────────────────────────────────────────────── */
 function JudgmentTab({ c }: { c: CaseDetails }) {
   const j = c.judgment;
-  if (!j || Object.keys(j).length === 0) return <p className="text-gray-400">Judgment not available yet</p>;
+  if (!j || Object.keys(j).length === 0) return <p className="text-slate-400">Judgment not available yet</p>;
   return (
     <div className="space-y-6">
       {j.final_decision && (
-        <div className="p-6 bg-gradient-to-r from-legal-gold/10 to-yellow-900/10 border border-legal-gold rounded-lg">
-          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><Gavel className="w-6 h-6 text-legal-gold"/>Final Decision</h3>
-          <div className="space-y-1">
+        <div className="p-6 bg-brand/10 border border-brand/30 rounded-xl">
+          <h3 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2"><Gavel className="w-5 h-5 text-brand-light"/>Final Decision</h3>
+          <div>
             <IR label="Verdict" value={j.final_decision.verdict}/>
             <IR label="Disposition" value={j.final_decision.disposition}/>
             {j.final_decision.relief_awarded && <IR label="Relief Awarded" value={j.final_decision.relief_awarded}/>}
           </div>
           {j.confidence_score > 0 && (
             <div className="mt-4">
-              <p className="text-gray-400 text-sm mb-1">Judicial Confidence: {(j.confidence_score * 100).toFixed(0)}%</p>
-              <div className="w-full bg-gray-600 rounded-full h-2">
-                <div className="bg-legal-gold h-2 rounded-full" style={{ width: `${j.confidence_score * 100}%` }}/>
+              <p className="text-slate-400 text-xs mb-1">Judicial Confidence: {(j.confidence_score * 100).toFixed(0)}%</p>
+              <div className="w-full bg-surface-border rounded-full h-1.5">
+                <div className="bg-brand h-1.5 rounded-full" style={{ width: `${j.confidence_score * 100}%` }}/>
               </div>
             </div>
           )}
@@ -483,8 +495,8 @@ function JudgmentTab({ c }: { c: CaseDetails }) {
       )}
       {j.judgment && (
         <Section title="Full Judgment">
-          <div className="p-4 bg-gray-700/50 rounded-lg max-h-96 overflow-y-auto">
-            <p className="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">{j.judgment}</p>
+          <div className="p-4 bg-surface-overlay rounded-xl border border-surface-border max-h-96 overflow-y-auto">
+            <p className="text-slate-300 whitespace-pre-wrap text-sm leading-relaxed">{j.judgment}</p>
           </div>
         </Section>
       )}
@@ -492,10 +504,10 @@ function JudgmentTab({ c }: { c: CaseDetails }) {
         <Section title="Legal Analysis by Issue">
           <div className="space-y-3">
             {j.legal_analysis.map((a: any, i: number) => (
-              <div key={i} className="p-4 bg-gray-700/50 rounded-lg">
-                <h5 className="text-white font-medium mb-2">{a.issue}</h5>
-                {a.court_reasoning && <p className="text-gray-300 text-sm mb-2">{a.court_reasoning}</p>}
-                {a.conclusion_on_issue && <p className="text-legal-gold text-sm font-medium">→ {a.conclusion_on_issue}</p>}
+              <div key={i} className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
+                <h5 className="text-slate-200 font-medium mb-2">{a.issue}</h5>
+                {a.court_reasoning && <p className="text-slate-300 text-sm mb-2">{a.court_reasoning}</p>}
+                {a.conclusion_on_issue && <p className="text-brand-light text-sm font-medium">→ {a.conclusion_on_issue}</p>}
               </div>
             ))}
           </div>
@@ -504,7 +516,7 @@ function JudgmentTab({ c }: { c: CaseDetails }) {
       {j.dissenting_views?.length > 0 && (
         <Section title="Dissenting Views">
           <ul className="space-y-1">
-            {j.dissenting_views.map((v: string, i: number) => <li key={i} className="text-gray-400 text-sm">• {v}</li>)}
+            {j.dissenting_views.map((v: string, i: number) => <li key={i} className="text-slate-400 text-sm">• {v}</li>)}
           </ul>
         </Section>
       )}
@@ -515,7 +527,7 @@ function JudgmentTab({ c }: { c: CaseDetails }) {
 /* ─── AnalysisTab ─────────────────────────────────────────────── */
 function AnalysisTab({ c }: { c: CaseDetails }) {
   const risk = c.risk_analysis;
-  if (!risk) return <p className="text-gray-400">Risk analysis not available</p>;
+  if (!risk) return <p className="text-slate-400">Risk analysis not available</p>;
   const overall = risk.overall_risk_assessment || {};
   const pRisks = risk.plaintiff_risks || {};
   const dRisks = risk.defendant_risks || {};
@@ -526,46 +538,46 @@ function AnalysisTab({ c }: { c: CaseDetails }) {
           { label: 'Plaintiff Win Probability', val: overall.plaintiff_win_probability || 0, color: 'bg-blue-500' },
           { label: 'Defendant Win Probability', val: overall.defendant_win_probability || 0, color: 'bg-red-500' },
         ].map(({ label, val, color }) => (
-          <div key={label} className="p-4 bg-gray-700/50 rounded-lg">
-            <h4 className="text-white font-semibold mb-2">{label}</h4>
+          <div key={label} className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
+            <h4 className="text-slate-200 font-semibold mb-2">{label}</h4>
             <div className="flex items-center gap-3">
-              <div className="flex-1 bg-gray-600 rounded-full h-3">
+              <div className="flex-1 bg-surface-border rounded-full h-3">
                 <div className={`${color} h-3 rounded-full`} style={{ width: `${val * 100}%` }}/>
               </div>
-              <span className="text-white font-bold w-12 text-right">{(val * 100).toFixed(0)}%</span>
+              <span className="text-slate-100 font-bold w-12 text-right">{(val * 100).toFixed(0)}%</span>
             </div>
           </div>
         ))}
       </div>
       <div className="grid md:grid-cols-3 gap-4">
-        {overall.case_complexity && <div className="p-3 bg-gray-700/50 rounded-lg"><p className="text-gray-400 text-xs">Complexity</p><p className="text-white font-bold capitalize">{overall.case_complexity}</p></div>}
-        {overall.settlement_likelihood !== undefined && <div className="p-3 bg-gray-700/50 rounded-lg"><p className="text-gray-400 text-xs">Settlement Likelihood</p><p className="text-white font-bold">{(overall.settlement_likelihood * 100).toFixed(0)}%</p></div>}
-        {overall.expected_duration && <div className="p-3 bg-gray-700/50 rounded-lg"><p className="text-gray-400 text-xs">Expected Duration</p><p className="text-white font-bold">{overall.expected_duration}</p></div>}
+        {overall.case_complexity && <div className="p-3 bg-surface-overlay rounded-xl border border-surface-border"><p className="text-slate-400 text-xs">Complexity</p><p className="text-slate-100 font-bold capitalize">{overall.case_complexity}</p></div>}
+        {overall.settlement_likelihood !== undefined && <div className="p-3 bg-surface-overlay rounded-xl border border-surface-border"><p className="text-slate-400 text-xs">Settlement Likelihood</p><p className="text-slate-100 font-bold">{(overall.settlement_likelihood * 100).toFixed(0)}%</p></div>}
+        {overall.expected_duration && <div className="p-3 bg-surface-overlay rounded-xl border border-surface-border"><p className="text-slate-400 text-xs">Expected Duration</p><p className="text-slate-100 font-bold">{overall.expected_duration}</p></div>}
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         {[['Plaintiff Risks', pRisks], ['Defendant Risks', dRisks]].map(([title, risks]: any) => (
           <div key={title}>
-            <h4 className="text-white font-semibold mb-3">{title}</h4>
+            <h4 className="text-slate-200 font-semibold mb-3">{title}</h4>
             {risks.legal_risks?.length > 0 && (
-              <div className="p-3 bg-gray-700/50 rounded-lg mb-2">
-                <p className="text-gray-400 text-xs mb-1 font-medium">Legal Risks</p>
-                {risks.legal_risks.map((r: string, i: number) => <p key={i} className="text-gray-300 text-sm">• {r}</p>)}
+              <div className="p-3 bg-surface-overlay rounded-xl border border-surface-border mb-2">
+                <p className="text-slate-400 text-xs mb-1 font-medium">Legal Risks</p>
+                {risks.legal_risks.map((r: string, i: number) => <p key={i} className="text-slate-300 text-sm">• {r}</p>)}
               </div>
             )}
             {risks.strength_score !== undefined && (
-              <p className="text-gray-400 text-sm">Strength Score: <span className="text-white font-bold">{risks.strength_score}/10</span></p>
+              <p className="text-slate-400 text-sm">Strength Score: <span className="text-slate-100 font-bold">{risks.strength_score}/10</span></p>
             )}
           </div>
         ))}
       </div>
       {risk.settlement_recommendations?.should_settle && (
-        <div className="p-4 bg-green-900/20 border border-green-800 rounded-lg">
-          <h4 className="text-green-400 font-semibold mb-1">Settlement Recommended</h4>
+        <div className="p-4 bg-emerald-900/15 border border-emerald-800/40 rounded-lg">
+          <h4 className="text-emerald-400 font-semibold mb-1">Settlement Recommended</h4>
           {risk.settlement_recommendations.recommended_settlement_range && (
-            <p className="text-gray-300 text-sm">Range: {risk.settlement_recommendations.recommended_settlement_range}</p>
+            <p className="text-slate-300 text-sm">Range: {risk.settlement_recommendations.recommended_settlement_range}</p>
           )}
           {risk.settlement_recommendations.settlement_timing && (
-            <p className="text-gray-300 text-sm">Timing: {risk.settlement_recommendations.settlement_timing}</p>
+            <p className="text-slate-300 text-sm">Timing: {risk.settlement_recommendations.settlement_timing}</p>
           )}
         </div>
       )}
@@ -576,11 +588,11 @@ function AnalysisTab({ c }: { c: CaseDetails }) {
 /* ─── DebateTab ───────────────────────────────────────────────── */
 function DebateTab({ c }: { c: CaseDetails }) {
   const debate = c.multi_model_debate;
-  if (!debate) return <p className="text-gray-400">Debate not available</p>;
+  if (!debate) return <p className="text-slate-400">Debate not available</p>;
   if (debate.status === 'skipped' || debate.error) return (
-    <div className="p-4 bg-yellow-900/20 border border-yellow-800 rounded-lg">
-      <h4 className="text-yellow-400 font-semibold mb-2">Debate Unavailable</h4>
-      <p className="text-gray-300">{debate.error || 'Groq API key required'}</p>
+    <div className="p-4 bg-amber-900/15 border border-amber-800/40 rounded-lg">
+      <h4 className="text-amber-400 font-semibold mb-2">Debate Unavailable</h4>
+      <p className="text-slate-300">{debate.error || 'Groq API key required'}</p>
     </div>
   );
   const transcript = debate.debate_transcript || [];
@@ -592,36 +604,40 @@ function DebateTab({ c }: { c: CaseDetails }) {
   };
   return (
     <div className="space-y-6">
-      <div className="p-6 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border border-purple-700 rounded-lg">
-        <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-          <MessageSquare className="w-8 h-8 text-purple-400"/>Multi-Model AI Debate
+      <div className="p-5 bg-brand/10 border border-brand/25 rounded-xl">
+        <h3 className="text-xl font-bold text-slate-100 mb-2 flex items-center gap-2">
+          <MessageSquare className="w-6 h-6 text-brand-light"/>Multi-Model AI Debate
         </h3>
-        <p className="text-gray-300 mb-3">{(debate.participating_models || []).length} models · {debate.total_rounds || 0} rounds</p>
+        <p className="text-slate-400 text-sm mb-3">{(debate.participating_models || []).length} models · {debate.total_rounds || 0} rounds</p>
         <div className="flex flex-wrap gap-2">
           {(debate.participating_models || []).map((m: string, i: number) => (
-            <Badge key={i} text={m} color="bg-purple-800/50 text-purple-200"/>
+            <Badge key={i} text={m} color="badge-brand"/>
           ))}
         </div>
       </div>
       {Object.keys(groups).sort((a, b) => +a - +b).map(round => (
         <div key={round} className="space-y-4">
-          <div className="flex items-center gap-2"><div className="h-px flex-1 bg-gray-700"/><h4 className="text-white font-semibold px-4">Round {round}</h4><div className="h-px flex-1 bg-gray-700"/></div>
+          <div className="flex items-center gap-2"><div className="h-px flex-1 bg-surface-overlay"/><h4 className="text-slate-200 font-semibold px-4">Round {round}</h4><div className="h-px flex-1 bg-surface-overlay"/></div>
           {groups[+round].map((entry, idx) => (
-            <div key={idx} className={`p-5 border-l-4 rounded-lg ${modelColors[entry.model] || 'border-gray-500 bg-gray-900/20'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-white font-semibold">{entry.model}</span>
-                <span className="text-xs text-gray-400">Round {entry.round}</span>
+            <div key={idx} className={`card p-4 border-l-4 ${entry.model.includes('70B') ? 'border-brand' : 'border-accent'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-200 font-semibold text-sm">{entry.model}</span>
+                <span className="badge badge-neutral">Round {entry.round}</span>
               </div>
-              <p className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">{entry.argument}</p>
+              <p className="text-slate-400 text-sm whitespace-pre-wrap leading-relaxed">{entry.argument}</p>
             </div>
           ))}
         </div>
       ))}
       {debate.final_consensus && (
-        <div className="mt-6">
-          <div className="flex items-center gap-2 mb-4"><div className="h-px flex-1 bg-legal-gold"/><h4 className="text-xl font-bold text-white px-4 flex items-center gap-2"><Gavel className="w-5 h-5 text-legal-gold"/>Consensus Opinion</h4><div className="h-px flex-1 bg-legal-gold"/></div>
-          <div className="p-6 bg-gradient-to-br from-legal-gold/10 to-yellow-900/10 border-2 border-legal-gold rounded-lg">
-            <p className="text-gray-200 whitespace-pre-wrap text-sm leading-relaxed">{debate.final_consensus}</p>
+        <div className="mt-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px flex-1 bg-surface-border"/>
+            <h4 className="text-sm font-semibold text-slate-300 flex items-center gap-1.5"><Gavel className="w-4 h-4 text-brand-light"/>Consensus Opinion</h4>
+            <div className="h-px flex-1 bg-surface-border"/>
+          </div>
+          <div className="card p-5 border-brand/30">
+            <p className="text-slate-300 whitespace-pre-wrap text-sm leading-relaxed">{debate.final_consensus}</p>
           </div>
         </div>
       )}
@@ -632,24 +648,24 @@ function DebateTab({ c }: { c: CaseDetails }) {
 /* ─── AgentsTab ───────────────────────────────────────────────── */
 function AgentsTab({ c }: { c: CaseDetails }) {
   const logs = c.agent_logs || [];
-  if (!logs.length) return <p className="text-gray-400">No agent logs available</p>;
+  if (!logs.length) return <p className="text-slate-400">No agent logs available</p>;
   return (
     <div className="space-y-4">
-      <p className="text-gray-400 text-sm">{logs.length} agents executed</p>
+      <p className="text-slate-400 text-sm">{logs.length} agents executed</p>
       {logs.map((log: any, i: number) => (
-        <div key={i} className="p-4 bg-gray-700/50 rounded-lg">
+        <div key={i} className="p-4 bg-surface-overlay rounded-xl border border-surface-border">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-white font-semibold">{log.agent_name}</h4>
+            <h4 className="text-slate-200 font-semibold">{log.agent_name}</h4>
             <div className="flex items-center gap-2">
-              {log.execution_time && <span className="text-gray-500 text-xs">{log.execution_time.toFixed(1)}s</span>}
-              <Badge text={log.status} color={log.status === 'success' ? 'bg-green-900/30 text-green-400' : log.status === 'skipped' ? 'bg-yellow-900/30 text-yellow-400' : 'bg-red-900/30 text-red-400'}/>
+              {log.execution_time && <span className="text-slate-500 text-xs">{log.execution_time.toFixed(1)}s</span>}
+              <Badge text={log.status} color={log.status === 'success' ? 'bg-emerald-900/25 text-emerald-400' : log.status === 'skipped' ? 'bg-amber-900/25 text-amber-400' : 'bg-rose-900/25 text-rose-400'}/>
             </div>
           </div>
-          {log.error && <p className="text-red-400 text-sm mb-2">{log.error}</p>}
+          {log.error && <p className="text-rose-400 text-sm mb-2">{log.error}</p>}
           {log.reasoning_trace?.length > 0 && (
-            <div className="mt-2 pt-2 border-t border-gray-600">
-              <p className="text-gray-500 text-xs font-medium mb-1">Trace:</p>
-              {log.reasoning_trace.map((t: string, j: number) => <p key={j} className="text-gray-300 text-xs">• {t}</p>)}
+            <div className="mt-2 pt-2 border-t border-surface-border">
+              <p className="text-slate-500 text-xs font-medium mb-1">Trace:</p>
+              {log.reasoning_trace.map((t: string, j: number) => <p key={j} className="text-slate-300 text-xs">• {t}</p>)}
             </div>
           )}
         </div>

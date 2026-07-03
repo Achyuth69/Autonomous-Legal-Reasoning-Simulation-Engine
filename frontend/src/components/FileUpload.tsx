@@ -1,8 +1,7 @@
 'use client';
-
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileText, X } from 'lucide-react';
+import { Upload, FileText, X, Loader2 } from 'lucide-react';
 import { casesApi, CaseResponse } from '@/lib/api';
 
 interface FileUploadProps {
@@ -18,7 +17,7 @@ export default function FileUpload({ onCaseCreated }: FileUploadProps) {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setSelectedFile(acceptedFiles[0]);
-      setTitle(acceptedFiles[0].name);
+      setTitle(acceptedFiles[0].name.replace(/\.[^.]+$/, ''));
       setError(null);
     }
   }, []);
@@ -34,105 +33,74 @@ export default function FileUpload({ onCaseCreated }: FileUploadProps) {
   });
 
   const handleUpload = async () => {
-    if (!selectedFile) {
-      setError('Please select a file');
-      return;
-    }
-
-    setUploading(true);
-    setError(null);
-
+    if (!selectedFile) { setError('Please select a file'); return; }
+    setUploading(true); setError(null);
     try {
-      const caseData = await casesApi.uploadCase(selectedFile, title);
+      const caseData = await casesApi.uploadCase(selectedFile, title || selectedFile.name);
       onCaseCreated(caseData);
-      setSelectedFile(null);
-      setTitle('');
+      setSelectedFile(null); setTitle('');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error uploading file');
-    } finally {
-      setUploading(false);
-    }
+      setError(err.response?.data?.detail || 'Upload failed. Please try again.');
+    } finally { setUploading(false); }
   };
 
   return (
-    <div className="bg-gray-800/50 rounded-lg border border-gray-700 p-6">
-      <h2 className="text-xl font-semibold text-white mb-4">Upload Legal Document</h2>
+    <div className="card p-6 animate-slide-up">
+      <h2 className="text-base font-semibold text-slate-200 mb-4">Upload Legal Document</h2>
 
       {!selectedFile ? (
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+        <div {...getRootProps()}
+          className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200 ${
             isDragActive
-              ? 'border-legal-gold bg-legal-gold/10'
-              : 'border-gray-600 hover:border-gray-500'
-          }`}
-        >
+              ? 'border-brand bg-brand/10'
+              : 'border-surface-border hover:border-brand/40 hover:bg-surface-overlay'
+          }`}>
           <input {...getInputProps()} />
-          <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <div className="w-12 h-12 rounded-xl bg-brand/10 border border-brand/20 flex items-center justify-center mx-auto mb-3">
+            <Upload className="w-6 h-6 text-brand-light" />
+          </div>
           {isDragActive ? (
-            <p className="text-gray-300 text-lg">Drop the file here...</p>
+            <p className="text-brand-light font-medium">Drop it here</p>
           ) : (
-            <div>
-              <p className="text-gray-300 text-lg mb-2">
-                Drag & drop a legal document here, or click to select
-              </p>
-              <p className="text-gray-500 text-sm">
-                Supported formats: PDF, DOCX, TXT (Max 10MB)
-              </p>
-            </div>
+            <>
+              <p className="text-slate-300 font-medium mb-1">Drag & drop or click to browse</p>
+              <p className="text-slate-500 text-sm">PDF, DOCX, TXT — max 10 MB</p>
+            </>
           )}
         </div>
       ) : (
         <div>
-          <div className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-lg mb-4">
-            <FileText className="w-10 h-10 text-legal-gold" />
-            <div className="flex-1">
-              <p className="text-white font-medium">{selectedFile.name}</p>
-              <p className="text-gray-400 text-sm">
-                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-              </p>
+          <div className="flex items-center gap-3 p-4 bg-surface-overlay border border-surface-border rounded-xl mb-4">
+            <div className="w-9 h-9 rounded-lg bg-brand/15 border border-brand/20 flex items-center justify-center shrink-0">
+              <FileText className="w-4 h-4 text-brand-light" />
             </div>
-            <button
-              onClick={() => setSelectedFile(null)}
-              className="p-2 hover:bg-gray-600 rounded transition-colors"
-            >
-              <X className="w-5 h-5 text-gray-400" />
+            <div className="flex-1 min-w-0">
+              <p className="text-slate-200 font-medium text-sm truncate">{selectedFile.name}</p>
+              <p className="text-slate-500 text-xs">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+            </div>
+            <button onClick={() => setSelectedFile(null)}
+              className="p-1.5 hover:bg-surface-border rounded-lg transition-colors">
+              <X className="w-4 h-4 text-slate-400" />
             </button>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Case Title (Optional)
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-legal-gold"
-              placeholder="Enter a custom title for this case"
-            />
+            <label className="block text-slate-400 text-sm mb-1.5">Case Title</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+              className="w-full px-3 py-2.5 bg-surface-overlay border border-surface-border rounded-lg text-slate-200 text-sm placeholder-slate-600 focus:border-brand/50"
+              placeholder="Enter a title for this case" />
           </div>
 
-          <button
-            onClick={handleUpload}
-            disabled={uploading}
-            className="w-full px-6 py-3 bg-legal-gold text-legal-darker font-semibold rounded-lg hover:bg-yellow-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploading ? (
-              <span className="flex items-center justify-center gap-2">
-                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-legal-darker"></div>
-                Processing...
-              </span>
-            ) : (
-              'Start Analysis'
-            )}
+          <button onClick={handleUpload} disabled={uploading}
+            className="btn-primary w-full justify-center py-3 text-sm disabled:opacity-50">
+            {uploading ? <><Loader2 className="w-4 h-4 animate-spin"/>Analysing…</> : <><Upload className="w-4 h-4"/>Start Analysis</>}
           </button>
         </div>
       )}
 
       {error && (
-        <div className="mt-4 p-4 bg-red-900/20 border border-red-800 rounded-lg">
-          <p className="text-red-400">{error}</p>
+        <div className="mt-3 p-3 bg-rose-900/15 border border-rose-800/30 rounded-lg">
+          <p className="text-rose-400 text-sm">{error}</p>
         </div>
       )}
     </div>
