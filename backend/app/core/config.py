@@ -24,9 +24,9 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # Groq — PRIMARY LLM (free at console.groq.com)
-    GROQ_API_KEY: str
+    GROQ_API_KEY: str = ""
     GROQ_DEBATE_ROUNDS: int = 3
-    GROQ_MODELS: str = "llama-3.3-70b-versatile,llama-3.1-8b-instant"
+    GROQ_MODELS: str = "llama-3.1-8b-instant"
 
     # Google Gemini (optional — fallback/alternative)
     GEMINI_API_KEY: str = ""

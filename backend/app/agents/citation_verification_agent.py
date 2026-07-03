@@ -7,10 +7,12 @@ from .base_agent import BaseAgent
 class CitationVerificationAgent(BaseAgent):
     """Agent that verifies legal citations and detects hallucinations"""
     
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__(
             agent_name="Citation Verification Agent",
             agent_description="Validates legal citations and detects fabricated references"
+        ,
+            session_config=session_config
         )
     
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:

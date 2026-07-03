@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 class ConstitutionRetrievalAgent(BaseAgent):
     """Searches ONLY the Constitution PDF in the knowledge base."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Constitution Retrieval Agent",
                          "Retrieves constitutional provisions from uploaded Constitution PDF")
         self.rag = get_rag_service()
@@ -109,7 +109,7 @@ Respond in JSON:
 class LawBookRetrievalAgent(BaseAgent):
     """Searches ONLY law/statute PDFs in the knowledge base."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Law Book Retrieval Agent",
                          "Retrieves statutory provisions from uploaded law books")
         self.rag = get_rag_service()
@@ -196,7 +196,7 @@ JSON response:
 class EvidenceRankingAgent(BaseAgent):
     """Merges, deduplicates and ranks all retrieved evidence."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Evidence Ranking Agent",
                          "Merges and ranks retrieved evidence from all sources")
 
@@ -267,7 +267,7 @@ Return JSON:
 class LegalPrincipleAgent(BaseAgent):
     """Derives legal principles from retrieved evidence only."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Legal Principle Agent",
                          "Derives legal principles from retrieved document evidence")
 
@@ -333,7 +333,7 @@ class ReasoningAgent(BaseAgent):
     Never produces conclusions without evidence.
     """
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Reasoning Agent",
                          "Converts facts + evidence into structured legal reasoning")
 
@@ -411,7 +411,7 @@ JSON response:
 class CrossExaminationAgent(BaseAgent):
     """Challenges plaintiff and defendant arguments with evidence from uploaded documents."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Cross Examination Agent",
                          "Challenges arguments using evidence from uploaded documents")
 
@@ -473,7 +473,7 @@ JSON:
 class ConfidenceAssessmentAgent(BaseAgent):
     """Calculates overall confidence based on evidence quality and coverage."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Confidence Assessment Agent",
                          "Assesses confidence based on documentary evidence coverage")
 
@@ -549,7 +549,7 @@ def _score_label(score: float) -> str:
 class FactExtractionAgent(BaseAgent):
     """Extracts structured facts from case document + unknown facts + contradictions."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Fact Extraction Agent",
                          "Extracts facts, unknown facts, and contradictions from case document")
 
@@ -602,7 +602,7 @@ Extract and return JSON:
 class LegalIssueIdentificationAgent(BaseAgent):
     """Automatically identifies all legal issues from facts."""
 
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Legal Issue Identification Agent",
                          "Identifies legal issues, violations, and applicable law domains")
 

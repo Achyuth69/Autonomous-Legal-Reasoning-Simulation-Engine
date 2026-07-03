@@ -6,10 +6,12 @@ from .base_agent import BaseAgent
 class RiskAnalysisAgent(BaseAgent):
     """Agent that performs litigation risk assessment"""
     
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__(
             agent_name="Risk Analysis Agent",
             agent_description="Predicts litigation risks and assesses case strengths"
+        ,
+            session_config=session_config
         )
     
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:

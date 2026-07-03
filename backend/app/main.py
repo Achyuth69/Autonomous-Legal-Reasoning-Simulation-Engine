@@ -2,12 +2,56 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.core.logging import configure_logging, get_logger
+from app.core.logging import get_logger
 from app.api.routes import api_router
 
-# Configure logging
-configure_logging()
 logger = get_logger(__name__)
+
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    description="Autonomous Legal Reasoning Engine — Multi-Provider LLM Support",
+    docs_url="/docs",
+    redoc_url="/redoc",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting", app=settings.APP_NAME, version=settings.APP_VERSION)
+    try:
+        from app.services.kb_auto_index import auto_index_knowledge_base
+        import asyncio
+        asyncio.ensure_future(auto_index_knowledge_base())
+    except Exception as e:
+        logger.warning(f"Auto-index skipped: {e}")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("Shutting down")
+
+
+@app.get("/")
+async def root():
+    return {"name": settings.APP_NAME, "version": settings.APP_VERSION,
+            "status": "running", "docs": "/docs"}
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
+app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 
 # Create FastAPI app
 app = FastAPI(

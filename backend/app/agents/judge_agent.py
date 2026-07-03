@@ -6,10 +6,12 @@ from .base_agent import BaseAgent
 class JudgeAgent(BaseAgent):
     """Agent that acts as an impartial judge to render a decision"""
     
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__(
             agent_name="Judge Agent",
             agent_description="Reviews both sides and produces a detailed legal judgment"
+        ,
+            session_config=session_config
         )
     
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:

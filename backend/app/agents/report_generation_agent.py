@@ -5,7 +5,7 @@ from app.agents.base_agent import BaseAgent
 
 
 class ReportGenerationAgent(BaseAgent):
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__("Report Generation Agent",
                          "Generates structured legal analysis reports")
 

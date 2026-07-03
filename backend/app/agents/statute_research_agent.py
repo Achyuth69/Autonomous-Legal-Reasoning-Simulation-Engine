@@ -6,10 +6,12 @@ from .base_agent import BaseAgent
 class StatuteResearchAgent(BaseAgent):
     """Agent responsible for identifying applicable statutes and legal provisions"""
     
-    def __init__(self):
+    def __init__(self, session_config=None):
         super().__init__(
             agent_name="Statute Research Agent",
             agent_description="Identifies relevant statutes, regulations, and constitutional provisions"
+        ,
+            session_config=session_config
         )
     
     async def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
